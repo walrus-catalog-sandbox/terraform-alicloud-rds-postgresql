@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  title: OpenAPI schema for template terraform-alicloud-rds-postgresql
+components:
+  schemas:
+    variables:
+      required:
+        - infrastructure
+      type: object
+      properties:
+        context:
+          title: Context
+          type: object
+          description: |
+            Receive contextual information. When Walrus deploys, Walrus will inject specific contextual information into this field.
+
+            Examples:
+            ```
+            context:
+              project:
+                name: string
+                id: string
+              environment:
+                name: string
+                id: string
+              resource:
+                name: string
+                id: string
+            ```
+          default: {}
+          additionalProperties:
+            type: object
+          x-walrus-ui:
+            group: Basic
+            hidden: true
+        infrastructure:
+          title: Infrastructure
+          type: object
+          description: |
+            Specify the infrastructure information for deploying.
+
+            Examples:
+            ```
+            infrastructure:
+              vpc_id: string                  # the ID of the VPC where the PostgreSQL service applies
+              kms_key_id: sting,optional      # the ID of the KMS key which to encrypt the PostgreSQL data
+              domain_suffix: string           # a private DNS namespace of the PrivateZone where to register the applied PostgreSQL service
+            ```
+          required:
+            - domain_suffix
+            - vpc_id
+          properties:
+            domain_suffix:
+              title: Domain Suffix
+              type: string
+            kms_key_id:
+              title: Kms Key Id
+              type: string
+            vpc_id:
+              title: Vpc Id
+              type: string
+          x-walrus-ui:
+            group: Basic
+        architecture:
+          title: Architecture
+          type: string
+          description: |
+            Specify the deployment architecture, select from standalone or replication.
+          default: standalone
+          enum:
+            - standalone
+            - replication
+          x-walrus-ui:
+            group: Basic
+        replication_readonly_replicas:
+          title: Replication Readonly Replicas
+          type: number
+          description: |
+            Specify the number of read-only replicas under the replication deployment.
+          default: 1
+          enum:
+            - 1
+            - 3
+            - 5
+          x-walrus-ui:
+            group: Basic
+            showIf: architecture=replication
+        engine_version:
+          title: Engine Version
+          type: string
+          description: |
+            Specify the deployment engine version, select from https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdbinstance.
+          default: "15.0"
+          enum:
+            - "15.0"
+            - "14.0"
+            - "13.0"
+          x-walrus-ui:
+            group: Basic
+        engine_parameters:
+          title: Engine Parameters
+          type: array
+          description: |
+            Specify the deployment engine parameters, select for https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-describeparametertemplates.
+          items:
+            properties:
+              name:
+                title: Name
+                type: string
+              value:
+                title: Value
+                type: string
+            required:
+              - name
+              - value
+            type: object
+          x-walrus-ui:
+            group: Basic
+        database:
+          title: Database
+          type: string
+          description: |
+            Specify the database name.
+          default: mydb
+          x-walrus-ui:
+            group: Basic
+        username:
+          title: Username
+          type: string
+          description: |
+            Specify the account username, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+          default: rdsuser
+          x-walrus-ui:
+            group: Basic
+        password:
+          title: Password
+          type: string
+          description: |
+            Specify the account password, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+          writeOnly: true
+          x-walrus-ui:
+            group: Basic
+        resources:
+          title: Resources
+          type: object
+          description: |
+            Specify the computing resources.
+
+            The computing resource design of Alibaba Cloud is very complex, it also needs to consider on the storage resource, please view the specification document for more information.
+
+            Examples:
+            ```
+            resources:
+              class: string, optional            # https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types
+              readonly_class: string, optional   # https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types
+            ```
+          properties:
+            class:
+              default: rds.pg.s2.large
+              title: Class
+              type: string
+            readonly_class:
+              default: rds.pg.s2.large
+              title: Readonly Class
+              type: string
+          x-walrus-ui:
+            group: Basic
+        storage:
+          title: Storage
+          type: object
+          description: |
+            Specify the storage resources, select from local_ssd, cloud_ssd, cloud_essd, cloud_essd2 or cloud_essd3.
+
+            Choosing the storage resource is also related to the computing resource, please view the specification document for more information.
+
+            Examples:
+            ```
+            storage:
+              class: string, optional        # https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_instance#db_instance_storage_type
+              size: number, optional         # in megabyte
+            ```
+          properties:
+            class:
+              default: local_ssd
+              title: Class
+              type: string
+            size:
+              default: 20480
+              title: Size
+              type: number
+          x-walrus-ui:
+            group: Basic
