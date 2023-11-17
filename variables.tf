@@ -117,7 +117,7 @@ EOF
   type        = string
   default     = "rdsuser"
   validation {
-    condition     = var.username != "root" && can(regex("^[A-Za-z_]{0,15}[a-z0-9]$", var.username))
+    condition     = var.username != "root" && can(regex("^[^pg][a-z][a-z0-9_]{0,61}[a-z0-9]$", var.username))
     error_message = format("Invalid username: %s", var.username)
   }
 }
