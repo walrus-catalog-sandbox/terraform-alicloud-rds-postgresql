@@ -5,7 +5,7 @@ components:
   schemas:
     variables:
       required:
-        - infrastructure
+      - infrastructure
       type: object
       properties:
         context:
@@ -30,9 +30,13 @@ components:
           default: {}
           additionalProperties:
             type: object
+            x-walrus-ui:
+              colSpan: 12
           x-walrus-ui:
+            colSpan: 12
             group: Basic
             hidden: true
+            order: 1
         infrastructure:
           title: Infrastructure
           type: object
@@ -47,20 +51,28 @@ components:
               domain_suffix: string           # a private DNS namespace of the PrivateZone where to register the applied PostgreSQL service
             ```
           required:
-            - domain_suffix
-            - vpc_id
+          - domain_suffix
+          - vpc_id
           properties:
             domain_suffix:
               title: Domain Suffix
               type: string
+              x-walrus-ui:
+                order: 3
             kms_key_id:
               title: Kms Key Id
               type: string
+              x-walrus-ui:
+                order: 2
             vpc_id:
               title: Vpc Id
               type: string
+              x-walrus-ui:
+                order: 1
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            order: 2
         architecture:
           title: Architecture
           type: string
@@ -68,10 +80,11 @@ components:
             Specify the deployment architecture, select from standalone or replication.
           default: standalone
           enum:
-            - standalone
-            - replication
+          - standalone
+          - replication
           x-walrus-ui:
             group: Basic
+            order: 3
         replication_readonly_replicas:
           title: Replication Readonly Replicas
           type: number
@@ -79,11 +92,12 @@ components:
             Specify the number of read-only replicas under the replication deployment.
           default: 1
           enum:
-            - 1
-            - 3
-            - 5
+          - 1
+          - 3
+          - 5
           x-walrus-ui:
             group: Basic
+            order: 4
             showIf: architecture=replication
         engine_version:
           title: Engine Version
@@ -92,11 +106,12 @@ components:
             Specify the deployment engine version, select from https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdbinstance.
           default: "15.0"
           enum:
-            - "15.0"
-            - "14.0"
-            - "13.0"
+          - "15.0"
+          - "14.0"
+          - "13.0"
           x-walrus-ui:
             group: Basic
+            order: 5
         engine_parameters:
           title: Engine Parameters
           type: array
@@ -111,11 +126,16 @@ components:
                 title: Value
                 type: string
             required:
-              - name
-              - value
+            - name
+            - value
             type: object
+            x-walrus-ui:
+              colSpan: 12
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            hidden: true
+            order: 6
         database:
           title: Database
           type: string
@@ -124,6 +144,7 @@ components:
           default: mydb
           x-walrus-ui:
             group: Basic
+            order: 7
         username:
           title: Username
           type: string
@@ -132,14 +153,17 @@ components:
           default: rdsuser
           x-walrus-ui:
             group: Basic
+            order: 8
         password:
           title: Password
           type: string
           description: |
             Specify the account password, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+          format: password
           writeOnly: true
           x-walrus-ui:
             group: Basic
+            order: 9
         resources:
           title: Resources
           type: object
@@ -154,17 +178,26 @@ components:
               class: string, optional            # https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types
               readonly_class: string, optional   # https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types
             ```
+          default:
+            class: rds.pg.s2.large
+            readonly_class: rds.pg.s2.large
           properties:
             class:
               default: rds.pg.s2.large
               title: Class
               type: string
+              x-walrus-ui:
+                order: 1
             readonly_class:
               default: rds.pg.s2.large
               title: Readonly Class
               type: string
+              x-walrus-ui:
+                order: 2
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            order: 10
         storage:
           title: Storage
           type: object
@@ -179,14 +212,23 @@ components:
               class: string, optional        # https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_instance#db_instance_storage_type
               size: number, optional         # in megabyte
             ```
+          default:
+            class: local_ssd
+            size: 20480
           properties:
             class:
               default: local_ssd
               title: Class
               type: string
+              x-walrus-ui:
+                order: 1
             size:
               default: 20480
               title: Size
               type: number
+              x-walrus-ui:
+                order: 2
           x-walrus-ui:
+            colSpan: 12
             group: Basic
+            order: 11
