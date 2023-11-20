@@ -57,6 +57,8 @@ data "alicloud_kms_keys" "selected" {
 }
 
 data "alicloud_pvtz_zones" "selected" {
+  count = var.infrastructure.domain_suffix == null ? 0 : 1
+
   keyword     = var.infrastructure.domain_suffix
   search_mode = "EXACT"
 
@@ -264,7 +266,9 @@ resource "alicloud_db_readonly_instance" "secondary" {
 #
 
 resource "alicloud_pvtz_zone_record" "primary" {
-  zone_id = data.alicloud_pvtz_zones.selected.ids[0]
+  count = var.infrastructure.domain_suffix == null ? 0 : 1
+
+  zone_id = data.alicloud_pvtz_zones.selected[0].ids[0]
 
   type = "CNAME"
   rr = format("%s.%s", (local.architecture == "replication" ? join("-", [
@@ -275,9 +279,9 @@ resource "alicloud_pvtz_zone_record" "primary" {
 }
 
 resource "alicloud_pvtz_zone_record" "secondary" {
-  count = local.architecture == "replication" ? coalesce(var.replication_readonly_replicas, 1) : 0
+  count = var.infrastructure.domain_suffix != null && local.architecture == "replication" ? coalesce(var.replication_readonly_replicas, 1) : 0
 
-  zone_id = data.alicloud_pvtz_zones.selected.ids[0]
+  zone_id = data.alicloud_pvtz_zones.selected[0].ids[0]
 
   type  = "CNAME"
   rr    = format("%s.%s", join("-", [local.name, "secondary", tostring(count.index)]), local.namespace)

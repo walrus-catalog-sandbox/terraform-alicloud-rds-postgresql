@@ -10,12 +10,20 @@ output "selector" {
 
 output "endpoint_internal" {
   description = "The internal endpoints, a string list, which are used for internal access."
-  value       = [format("%s.%s:5432", alicloud_pvtz_zone_record.primary.rr, var.infrastructure.domain_suffix)]
+  value = [
+    var.infrastructure.domain_suffix == null ?
+    format("%s:5432", alicloud_db_instance.primary.connection_string) :
+    format("%s.%s:5432", alicloud_pvtz_zone_record.primary[0].rr, var.infrastructure.domain_suffix)
+  ]
 }
 
 output "endpoint_internal_readonly" {
   description = "The internal readonly endpoints, a string list, which are used for internal readonly access."
-  value       = local.architecture == "replication" ? [for c in alicloud_pvtz_zone_record.secondary : format("%s.%s:5432", c.rr, var.infrastructure.domain_suffix)] : []
+  value = local.architecture == "replication" ? flatten([
+    var.infrastructure.domain_suffix == null ?
+    formatlist("%s:5432", alicloud_db_readonly_instance.secondary[*].connection_string) :
+    [for c in alicloud_pvtz_zone_record.secondary : format("%s.%s:5432", c.rr, var.infrastructure.domain_suffix)]
+  ]) : []
 }
 
 output "database" {

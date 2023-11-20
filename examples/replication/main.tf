@@ -62,57 +62,19 @@ resource "alicloud_vswitch" "example" {
   description = "example"
 }
 
-# create kms key.
-
-data "alicloud_kms_keys" "example" {
-  description_regex = "example"
-}
-
-resource "alicloud_kms_key" "example" {
-  count = length(data.alicloud_kms_keys.example.ids) == 0 ? 1 : 0
-
-  key_usage              = "ENCRYPT/DECRYPT"
-  key_spec               = "Aliyun_AES_256"
-  pending_window_in_days = "7"
-  status                 = "Enabled"
-  automatic_rotation     = "Disabled"
-  description            = "example"
-}
-
-# create private dns.
-
-#data "alicloud_pvtz_service" "selected" {
-#  enable = "On"
-#}
-
-resource "alicloud_pvtz_zone" "example" {
-  zone_name = "my-dev-dns"
-
-  #  depends_on = [data.alicloud_pvtz_service.selected]
-}
-
-resource "alicloud_pvtz_zone_attachment" "example" {
-  zone_id = alicloud_pvtz_zone.example.id
-  vpc_ids = [alicloud_vpc.example.id]
-}
-
 # create postgresql service.
 
 module "this" {
   source = "../.."
 
   infrastructure = {
-    vpc_id        = alicloud_vpc.example.id
-    kms_key_id    = length(data.alicloud_kms_keys.example.ids) == 0 ? alicloud_kms_key.example[0].id : data.alicloud_kms_keys.example.ids[0]
-    domain_suffix = alicloud_pvtz_zone.example.zone_name
+    vpc_id = alicloud_vpc.example.id
   }
 
   architecture                  = "replication"
   replication_readonly_replicas = 3
   resources                     = local.resources
   storage                       = local.storage
-
-  depends_on = [alicloud_pvtz_zone.example]
 }
 
 output "context" {

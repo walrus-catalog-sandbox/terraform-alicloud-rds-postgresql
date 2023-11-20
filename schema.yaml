@@ -48,23 +48,28 @@ components:
             infrastructure:
               vpc_id: string                  # the ID of the VPC where the PostgreSQL service applies
               kms_key_id: sting,optional      # the ID of the KMS key which to encrypt the PostgreSQL data
-              domain_suffix: string           # a private DNS namespace of the PrivateZone where to register the applied PostgreSQL service
+              domain_suffix: string,optional  # a private DNS namespace of the PrivateZone where to register the applied PostgreSQL service
             ```
           required:
-          - domain_suffix
           - vpc_id
           properties:
             domain_suffix:
+              description: |
+                Specify the domain suffix of the PrivateZone. The domain suffix must be a valid DNS name.
               title: Domain Suffix
               type: string
               x-walrus-ui:
                 order: 3
             kms_key_id:
+              description: |
+                Specify the KMS key ID which to encrypt the PostgreSQL data. If not specified, the PostgreSQL data will not be encrypted.
               title: Kms Key Id
               type: string
               x-walrus-ui:
                 order: 2
             vpc_id:
+              description: |
+                Specify the ID of the VPC where the PostgreSQL service applies.
               title: Vpc Id
               type: string
               x-walrus-ui:
@@ -159,6 +164,7 @@ components:
           type: string
           description: |
             Specify the account password, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+            If not specified, it will generate a random password.
           format: password
           writeOnly: true
           x-walrus-ui:
@@ -183,12 +189,16 @@ components:
             readonly_class: rds.pg.s2.large
           properties:
             class:
+              description: |
+                Specify the computing resources for primay instance. See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types.
               default: rds.pg.s2.large
               title: Class
               type: string
               x-walrus-ui:
                 order: 1
             readonly_class:
+              description: |
+                Specify the computing resources for readonly instance. See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types.
               default: rds.pg.s2.large
               title: Readonly Class
               type: string
@@ -217,14 +227,18 @@ components:
             size: 20480
           properties:
             class:
+              description: |
+                Specify the storage class. See https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_instance#db_instance_storage_type.
               default: local_ssd
               title: Class
               type: string
               x-walrus-ui:
                 order: 1
             size:
+              description: |
+                Specify the storage size. Unit is megabyte.
               default: 20480
-              title: Size
+              title: Size(MiB)
               type: number
               x-walrus-ui:
                 order: 2
