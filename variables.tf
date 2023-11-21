@@ -36,7 +36,7 @@ Examples:
 ```
 infrastructure:
   vpc_id: string                  # the ID of the VPC where the PostgreSQL service applies
-  kms_key_id: sting,optional      # the ID of the KMS key which to encrypt the PostgreSQL data
+  kms_key_id: string,optional     # the ID of the KMS key which to encrypt the PostgreSQL data
   domain_suffix: string,optional  # a private DNS namespace of the PrivateZone where to register the applied PostgreSQL service
 ```
 EOF
@@ -58,7 +58,7 @@ EOF
   type        = string
   default     = "standalone"
   validation {
-    condition     = var.architecture == null || contains(["standalone", "replication"], var.architecture)
+    condition     = contains(["standalone", "replication"], var.architecture)
     error_message = "Invalid architecture"
   }
 }
@@ -100,31 +100,37 @@ EOF
 
 variable "database" {
   description = <<-EOF
-Specify the database name.
+Specify the database name. The database name must be 2-64 characters long and start with any lower letter, combined with number, or symbols: - _.
+The database name cannot be PostgreSQL forbidden keyword.
+See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdatabase.
 EOF
   type        = string
   default     = "mydb"
   validation {
-    condition     = var.database == null || can(regex("^[a-z][-a-z0-9_]{0,61}[a-z0-9]$", var.database))
+    condition     = can(regex("^[a-z][-a-z0-9_]{0,61}[a-z0-9]$", var.database))
     error_message = format("Invalid database: %s", var.database)
   }
 }
 
 variable "username" {
   description = <<-EOF
-Specify the account username, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+Specify the account username. The username must be 2-16 characters long and start with lower letter(expect `pg` prefix), combined with number, or symbol: _.
+The username cannot be PostgreSQL forbidden keyword and postgres.
+See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
 EOF
   type        = string
   default     = "rdsuser"
   validation {
-    condition     = var.username != "root" && can(regex("^[^pg][a-z][a-z0-9_]{0,61}[a-z0-9]$", var.username))
+    condition     = var.username != "postgres" && can(regex("^[^pg][a-z][a-z0-9_]{0,14}[a-z0-9]$", var.username))
     error_message = format("Invalid username: %s", var.username)
   }
 }
 
 variable "password" {
   description = <<-EOF
-Specify the account password, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+Specify the account password. The password must be 8-32 characters long and start with any letter, number, or symbols: ! # $ % ^ & * ( ) _ + - =.
+If not specified, it will generate a random password.
+See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
 EOF
   type        = string
   sensitive   = true
@@ -138,7 +144,6 @@ EOF
 variable "resources" {
   description = <<-EOF
 Specify the computing resources.
-
 The computing resource design of Alibaba Cloud is very complex, it also needs to consider on the storage resource, please view the specification document for more information.
 
 Examples:
@@ -149,19 +154,17 @@ resources:
 ```
 EOF
   type = object({
-    class          = optional(string)
+    class          = optional(string, "rds.pg.s2.large")
     readonly_class = optional(string)
   })
   default = {
-    class          = "rds.pg.s2.large"
-    readonly_class = "rds.pg.s2.large"
+    class = "rds.pg.s2.large"
   }
 }
 
 variable "storage" {
   description = <<-EOF
 Specify the storage resources, select from local_ssd, cloud_ssd, cloud_essd, cloud_essd2 or cloud_essd3.
-
 Choosing the storage resource is also related to the computing resource, please view the specification document for more information.
 
 Examples:

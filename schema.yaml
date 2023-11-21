@@ -13,20 +13,6 @@ components:
           type: object
           description: |
             Receive contextual information. When Walrus deploys, Walrus will inject specific contextual information into this field.
-
-            Examples:
-            ```
-            context:
-              project:
-                name: string
-                id: string
-              environment:
-                name: string
-                id: string
-              resource:
-                name: string
-                id: string
-            ```
           default: {}
           additionalProperties:
             type: object
@@ -34,7 +20,7 @@ components:
               colSpan: 12
           x-walrus-ui:
             colSpan: 12
-            group: Basic
+            group: Advanced
             hidden: true
             order: 1
         infrastructure:
@@ -42,14 +28,6 @@ components:
           type: object
           description: |
             Specify the infrastructure information for deploying.
-
-            Examples:
-            ```
-            infrastructure:
-              vpc_id: string                  # the ID of the VPC where the PostgreSQL service applies
-              kms_key_id: sting,optional      # the ID of the KMS key which to encrypt the PostgreSQL data
-              domain_suffix: string,optional  # a private DNS namespace of the PrivateZone where to register the applied PostgreSQL service
-            ```
           required:
           - vpc_id
           properties:
@@ -76,7 +54,7 @@ components:
                 order: 1
           x-walrus-ui:
             colSpan: 12
-            group: Basic
+            group: Advanced
             order: 2
         architecture:
           title: Architecture
@@ -145,8 +123,12 @@ components:
           title: Database
           type: string
           description: |
-            Specify the database name.
+            Specify the database name. The database name must be 2-64 characters long and start with any lower letter, combined with number, or symbols: - _. 
+            The database name cannot be PostgreSQL forbidden keyword.
+            See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdatabase.
           default: mydb
+          maxLength: 64
+          minLength: 2
           x-walrus-ui:
             group: Basic
             order: 7
@@ -154,17 +136,24 @@ components:
           title: Username
           type: string
           description: |
-            Specify the account username, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+            Specify the account username. The username must be 2-16 characters long and start with lower letter(expect `pg` prefix), combined with number, or symbol: _.
+            The username cannot be PostgreSQL forbidden keyword and postgres.
+            See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+          maxLength: 16
+          minLength: 2
           default: rdsuser
           x-walrus-ui:
             group: Basic
             order: 8
         password:
           title: Password
+          maxLength: 32
+          minLength: 8
           type: string
           description: |
-            Specify the account password, ref to https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
+            Specify the account password. The password must be 8-32 characters long and start with any letter, number, or symbols: ! # $ % ^ & * ( ) _ + - =.
             If not specified, it will generate a random password.
+            See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
           format: password
           writeOnly: true
           x-walrus-ui:
@@ -175,18 +164,9 @@ components:
           type: object
           description: |
             Specify the computing resources.
-
             The computing resource design of Alibaba Cloud is very complex, it also needs to consider on the storage resource, please view the specification document for more information.
-
-            Examples:
-            ```
-            resources:
-              class: string, optional            # https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types
-              readonly_class: string, optional   # https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types
-            ```
           default:
             class: rds.pg.s2.large
-            readonly_class: rds.pg.s2.large
           properties:
             class:
               description: |
@@ -199,7 +179,6 @@ components:
             readonly_class:
               description: |
                 Specify the computing resources for readonly instance. See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types.
-              default: rds.pg.s2.large
               title: Readonly Class
               type: string
               x-walrus-ui:
@@ -213,15 +192,7 @@ components:
           type: object
           description: |
             Specify the storage resources, select from local_ssd, cloud_ssd, cloud_essd, cloud_essd2 or cloud_essd3.
-
             Choosing the storage resource is also related to the computing resource, please view the specification document for more information.
-
-            Examples:
-            ```
-            storage:
-              class: string, optional        # https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_instance#db_instance_storage_type
-              size: number, optional         # in megabyte
-            ```
           default:
             class: local_ssd
             size: 20480
@@ -246,3 +217,7 @@ components:
             colSpan: 12
             group: Basic
             order: 11
+      x-walrus-ui:
+        groupOrder:
+        - Basic
+        - Advanced

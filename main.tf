@@ -248,7 +248,7 @@ resource "alicloud_db_readonly_instance" "secondary" {
     }
   }
 
-  instance_type            = try(var.resources.readonly_class, alicloud_db_instance.primary.instance_type)
+  instance_type            = coalesce(var.resources.readonly_class, alicloud_db_instance.primary.instance_type)
   db_instance_storage_type = alicloud_db_instance.primary.db_instance_storage_type
   instance_storage         = alicloud_db_instance.primary.instance_storage
 
