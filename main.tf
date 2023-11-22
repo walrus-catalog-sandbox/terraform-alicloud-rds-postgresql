@@ -96,7 +96,11 @@ resource "random_string" "name_suffix" {
 locals {
   name     = join("-", [local.resource_name, random_string.name_suffix.result])
   fullname = join("-", [local.namespace, local.name])
+  database = coalesce(var.database, "mydb")
+  username = coalesce(var.username, "rdsuser")
   password = coalesce(var.password, random_password.password.result)
+
+  replication_readonly_replicas = var.replication_readonly_replicas == 0 ? 1 : var.replication_readonly_replicas
 }
 
 #
@@ -133,7 +137,7 @@ locals {
     },
     {
       for c in(var.engine_parameters != null ? var.engine_parameters : []) : c.name => c.value
-      if c.value != ""
+      if try(c.value != "", false)
     }
   )
 }
@@ -202,7 +206,7 @@ resource "alicloud_db_instance" "primary" {
 
 resource "alicloud_db_database" "database" {
   instance_id   = alicloud_db_instance.primary.id
-  name          = var.database
+  name          = local.database
   character_set = "utf8"
 
   lifecycle {
@@ -216,7 +220,7 @@ resource "alicloud_db_database" "database" {
 resource "alicloud_rds_account" "account" {
   db_instance_id   = alicloud_db_instance.primary.id
   account_type     = "Super"
-  account_name     = var.username
+  account_name     = local.username
   account_password = local.password
 
   lifecycle {
@@ -230,7 +234,7 @@ resource "alicloud_rds_account" "account" {
 # create secondary instance.
 
 resource "alicloud_db_readonly_instance" "secondary" {
-  count = local.architecture == "replication" ? coalesce(var.replication_readonly_replicas, 1) : 0
+  count = local.architecture == "replication" ? local.replication_readonly_replicas : 0
 
   master_db_instance_id = alicloud_db_instance.primary.id
 
@@ -279,7 +283,7 @@ resource "alicloud_pvtz_zone_record" "primary" {
 }
 
 resource "alicloud_pvtz_zone_record" "secondary" {
-  count = var.infrastructure.domain_suffix != null && local.architecture == "replication" ? coalesce(var.replication_readonly_replicas, 1) : 0
+  count = var.infrastructure.domain_suffix != null && local.architecture == "replication" ? local.replication_readonly_replicas : 0
 
   zone_id = data.alicloud_pvtz_zones.selected[0].ids[0]
 
