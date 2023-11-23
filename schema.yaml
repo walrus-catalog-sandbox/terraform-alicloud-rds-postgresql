@@ -140,7 +140,7 @@ components:
           minLength: 2
           x-walrus-ui:
             group: Basic
-            order: 7
+            order: 9
         username:
           title: Username
           type: string
@@ -154,7 +154,7 @@ components:
           minLength: 2
           x-walrus-ui:
             group: Basic
-            order: 8
+            order: 7
         password:
           title: Password
           type: string
@@ -169,7 +169,7 @@ components:
           writeOnly: true
           x-walrus-ui:
             group: Basic
-            order: 9
+            order: 8
         resources:
           title: Resources
           type: object
