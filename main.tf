@@ -9,6 +9,8 @@ locals {
   namespace = join("-", [local.project_name, local.environment_name])
 
   tags = {
+    "Name" = join("-", [local.namespace, local.resource_name])
+
     "walrus.seal.io/project-id"       = local.project_id
     "walrus.seal.io/environment-id"   = local.environment_id
     "walrus.seal.io/resource-id"      = local.resource_id
@@ -94,11 +96,12 @@ resource "random_string" "name_suffix" {
 }
 
 locals {
-  name     = join("-", [local.resource_name, random_string.name_suffix.result])
-  fullname = join("-", [local.namespace, local.name])
-  database = coalesce(var.database, "mydb")
-  username = coalesce(var.username, "rdsuser")
-  password = coalesce(var.password, random_password.password.result)
+  name        = join("-", [local.resource_name, random_string.name_suffix.result])
+  fullname    = join("-", [local.namespace, local.name])
+  description = "Created by Walrus catalog, and provisioned by Terraform."
+  database    = coalesce(var.database, "mydb")
+  username    = coalesce(var.username, "rdsuser")
+  password    = coalesce(var.password, random_password.password.result)
 
   replication_readonly_replicas = var.replication_readonly_replicas == 0 ? 1 : var.replication_readonly_replicas
 }
@@ -173,8 +176,9 @@ locals {
 }
 
 resource "alicloud_db_instance" "primary" {
-  instance_name      = local.fullname
-  tags               = local.tags
+  instance_name = local.fullname
+  tags          = local.tags
+
   category           = "HighAvailability"
   vpc_id             = data.alicloud_vpcs.selected.ids[0]
   vswitch_id         = join(",", [local.vswitches[0], local.vswitches[1]])
@@ -205,8 +209,10 @@ resource "alicloud_db_instance" "primary" {
 # create database.
 
 resource "alicloud_db_database" "database" {
+  name        = local.database
+  description = local.description
+
   instance_id   = alicloud_db_instance.primary.id
-  name          = local.database
   character_set = "utf8"
 
   lifecycle {
@@ -236,12 +242,12 @@ resource "alicloud_rds_account" "account" {
 resource "alicloud_db_readonly_instance" "secondary" {
   count = local.architecture == "replication" ? local.replication_readonly_replicas : 0
 
-  master_db_instance_id = alicloud_db_instance.primary.id
-
   instance_name = join("-", [local.fullname, "secondary", tostring(count.index)])
   tags          = local.tags
-  vswitch_id    = local.vswitches[count.index % length(local.vswitches)]
-  zone_id       = local.vswitch_zone_map[local.vswitches[count.index % length(local.vswitches)]]
+
+  master_db_instance_id = alicloud_db_instance.primary.id
+  vswitch_id            = local.vswitches[count.index % length(local.vswitches)]
+  zone_id               = local.vswitch_zone_map[local.vswitches[count.index % length(local.vswitches)]]
 
   engine_version = alicloud_db_instance.primary.engine_version
   dynamic "parameters" {

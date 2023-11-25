@@ -182,7 +182,8 @@ components:
           properties:
             class:
               description: |
-                Specify the computing resources for primay instance. See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types.
+                Specify the computing resources for primay instance. 
+                See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types.
               default: rds.pg.s2.large
               nullable: true
               title: Class
@@ -191,7 +192,9 @@ components:
                 order: 1
             readonly_class:
               description: |
-                Specify the computing resources for readonly instance. See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types.
+                Specify the computing resources for readonly instance.
+                Configure this field when `architecture` is `replication`, if not specified, it will use the same value as `class`.
+                See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types.
               nullable: true
               title: Readonly Class
               type: string
