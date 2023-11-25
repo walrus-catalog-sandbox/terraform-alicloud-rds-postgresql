@@ -111,28 +111,6 @@ locals {
 # Deployment
 #
 
-# create security group.
-
-resource "alicloud_security_group" "target" {
-  name = local.fullname
-  tags = local.tags
-
-  vpc_id = data.alicloud_vpcs.selected.ids[0]
-}
-
-resource "alicloud_security_group_rule" "target" {
-  security_group_id = alicloud_security_group.target.id
-
-  type        = "ingress"
-  ip_protocol = "tcp"
-  cidr_ip     = data.alicloud_vpcs.selected.vpcs[0].cidr_block
-  nic_type    = "intranet"
-  policy      = "accept"
-  port_range  = "5432/5432"
-  priority    = 1
-  description = "Access PostgreSQL from VPC"
-}
-
 locals {
   version = coalesce(var.engine_version, "15.0")
   parameters = merge(
@@ -180,12 +158,12 @@ resource "alicloud_db_instance" "primary" {
   instance_name = local.fullname
   tags          = local.tags
 
-  category           = "HighAvailability"
-  vpc_id             = data.alicloud_vpcs.selected.ids[0]
-  vswitch_id         = join(",", [local.vswitches[0], local.vswitches[1]])
-  zone_id            = local.vswitch_zone_map[local.vswitches[0]]
-  zone_id_slave_a    = local.vswitch_zone_map[local.vswitches[1]]
-  security_group_ids = [alicloud_security_group.target.id]
+  category        = "HighAvailability"
+  vpc_id          = data.alicloud_vpcs.selected.ids[0]
+  vswitch_id      = join(",", [local.vswitches[0], local.vswitches[1]])
+  zone_id         = local.vswitch_zone_map[local.vswitches[0]]
+  zone_id_slave_a = local.vswitch_zone_map[local.vswitches[1]]
+  security_ips    = try(var.infrastructure.publicly_accessible, false) ? ["0.0.0.0/0", data.alicloud_vpcs.selected.vpcs[0].cidr_block] : [data.alicloud_vpcs.selected.vpcs[0].cidr_block]
 
   engine         = "PostgreSQL"
   engine_version = local.version
@@ -249,6 +227,7 @@ resource "alicloud_db_readonly_instance" "secondary" {
   master_db_instance_id = alicloud_db_instance.primary.id
   vswitch_id            = local.vswitches[count.index % length(local.vswitches)]
   zone_id               = local.vswitch_zone_map[local.vswitches[count.index % length(local.vswitches)]]
+  security_ips          = try(var.infrastructure.publicly_accessible, false) ? ["0.0.0.0/0", data.alicloud_vpcs.selected.vpcs[0].cidr_block] : [data.alicloud_vpcs.selected.vpcs[0].cidr_block]
 
   engine_version = alicloud_db_instance.primary.engine_version
   dynamic "parameters" {
