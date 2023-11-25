@@ -1,15 +1,19 @@
 locals {
   port = 5432
 
-  hosts = [
-    var.infrastructure.domain_suffix == null ?
-    format("%s", alicloud_db_instance.primary.connection_string) :
-    format("%s.%s", alicloud_pvtz_zone_record.primary[0].rr, var.infrastructure.domain_suffix)
-  ]
+  hosts = flatten([
+    local.publicly_accessible ? alicloud_db_connection.primary[*].connection_string : [
+      var.infrastructure.domain_suffix == null ?
+      format("%s", alicloud_db_instance.primary.connection_string) :
+      format("%s.%s", alicloud_pvtz_zone_record.primary[0].rr, var.infrastructure.domain_suffix)
+    ]
+  ])
   hosts_readonly = local.architecture == "replication" ? flatten([
-    var.infrastructure.domain_suffix == null ?
-    alicloud_db_readonly_instance.secondary[*].connection_string :
-    [for c in alicloud_pvtz_zone_record.secondary : format("%s.%s", c.rr, var.infrastructure.domain_suffix)]
+    local.publicly_accessible ? alicloud_db_connection.secondary[*].connection_string : [
+      var.infrastructure.domain_suffix == null ?
+      alicloud_db_readonly_instance.secondary[*].connection_string :
+      [for c in alicloud_pvtz_zone_record.secondary : format("%s.%s", c.rr, var.infrastructure.domain_suffix)]
+    ]
   ]) : []
 
   endpoints = [

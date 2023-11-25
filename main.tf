@@ -122,6 +122,7 @@ locals {
       if try(c.value != "", false)
     }
   )
+  publicly_accessible = try(var.infrastructure.publicly_accessible, false)
 }
 
 data "alicloud_db_zones" "selected" {
@@ -163,7 +164,7 @@ resource "alicloud_db_instance" "primary" {
   vswitch_id      = join(",", [local.vswitches[0], local.vswitches[1]])
   zone_id         = local.vswitch_zone_map[local.vswitches[0]]
   zone_id_slave_a = local.vswitch_zone_map[local.vswitches[1]]
-  security_ips    = try(var.infrastructure.publicly_accessible, false) ? ["0.0.0.0/0", data.alicloud_vpcs.selected.vpcs[0].cidr_block] : [data.alicloud_vpcs.selected.vpcs[0].cidr_block]
+  security_ips    = local.publicly_accessible ? ["0.0.0.0/0", data.alicloud_vpcs.selected.vpcs[0].cidr_block] : [data.alicloud_vpcs.selected.vpcs[0].cidr_block]
 
   engine         = "PostgreSQL"
   engine_version = local.version
@@ -227,7 +228,7 @@ resource "alicloud_db_readonly_instance" "secondary" {
   master_db_instance_id = alicloud_db_instance.primary.id
   vswitch_id            = local.vswitches[count.index % length(local.vswitches)]
   zone_id               = local.vswitch_zone_map[local.vswitches[count.index % length(local.vswitches)]]
-  security_ips          = try(var.infrastructure.publicly_accessible, false) ? ["0.0.0.0/0", data.alicloud_vpcs.selected.vpcs[0].cidr_block] : [data.alicloud_vpcs.selected.vpcs[0].cidr_block]
+  security_ips          = local.publicly_accessible ? ["0.0.0.0/0", data.alicloud_vpcs.selected.vpcs[0].cidr_block] : [data.alicloud_vpcs.selected.vpcs[0].cidr_block]
 
   engine_version = alicloud_db_instance.primary.engine_version
   dynamic "parameters" {
@@ -255,15 +256,27 @@ resource "alicloud_db_readonly_instance" "secondary" {
 # Exposing
 #
 
+resource "alicloud_db_connection" "primary" {
+  count = local.publicly_accessible ? 1 : 0
+
+  instance_id = alicloud_db_instance.primary.id
+  port        = local.port
+}
+
+resource "alicloud_db_connection" "secondary" {
+  count = local.publicly_accessible && local.architecture == "replication" ? local.replication_readonly_replicas : 0
+
+  instance_id = alicloud_db_readonly_instance.secondary[count.index].id
+  port        = local.port
+}
+
 resource "alicloud_pvtz_zone_record" "primary" {
   count = var.infrastructure.domain_suffix == null ? 0 : 1
 
   zone_id = data.alicloud_pvtz_zones.selected[0].ids[0]
 
-  type = "CNAME"
-  rr = format("%s.%s", (local.architecture == "replication" ? join("-", [
-    local.name, "primary"
-  ]) : local.name), local.namespace)
+  type  = "CNAME"
+  rr    = format("%s.%s", (local.architecture == "replication" ? join("-", [local.name, "primary"]) : local.name), local.namespace)
   value = alicloud_db_instance.primary.connection_string
   ttl   = 30
 }
