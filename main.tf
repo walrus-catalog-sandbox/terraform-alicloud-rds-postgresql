@@ -204,6 +204,8 @@ resource "alicloud_db_database" "database" {
 }
 
 resource "alicloud_rds_account" "account" {
+  account_description = local.description
+
   db_instance_id   = alicloud_db_instance.primary.id
   account_type     = "Super"
   account_name     = local.username
@@ -213,6 +215,27 @@ resource "alicloud_rds_account" "account" {
     ignore_changes = [
       account_name,
       account_password,
+    ]
+  }
+}
+
+resource "alicloud_db_account_privilege" "privilege" {
+  count = local.username != "postgres" ? 1 : 0
+
+  privilege    = "DBOwner"
+  instance_id  = alicloud_db_instance.primary.id
+  account_name = alicloud_rds_account.account.account_name
+  db_names     = [alicloud_db_database.database.name]
+
+  depends_on = [
+    alicloud_rds_account.account,
+    alicloud_db_database.database
+  ]
+
+  lifecycle {
+    ignore_changes = [
+      account_name,
+      db_names,
     ]
   }
 }

@@ -54,6 +54,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [alicloud_db_account_privilege.privilege](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_account_privilege) | resource |
 | [alicloud_db_connection.primary](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_connection) | resource |
 | [alicloud_db_connection.secondary](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_connection) | resource |
 | [alicloud_db_database.database](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_database) | resource |
