@@ -9,11 +9,11 @@ locals {
     ]
   ])
   hosts_readonly = local.architecture == "replication" ? flatten([
-    local.publicly_accessible ? alicloud_db_connection.secondary[*].connection_string : [
+    local.publicly_accessible ? alicloud_db_connection.secondary[*].connection_string : flatten([
       var.infrastructure.domain_suffix == null ?
       alicloud_db_readonly_instance.secondary[*].connection_string :
       [for c in alicloud_pvtz_zone_record.secondary : format("%s.%s", c.rr, var.infrastructure.domain_suffix)]
-    ]
+    ])
   ]) : []
 
   endpoints = [
