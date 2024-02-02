@@ -19,7 +19,6 @@ components:
             domain_suffix:
               description: |
                 Specify the domain suffix of the PrivateZone. The domain suffix must be a valid DNS name.
-              nullable: true
               title: Domain Suffix
               type: string
               x-walrus-ui:
@@ -27,7 +26,6 @@ components:
             kms_key_id:
               description: |
                 Specify the KMS key ID which to encrypt the PostgreSQL data. If not specified, the PostgreSQL data will not be encrypted.
-              nullable: true
               title: Kms Key Id
               type: string
               x-walrus-ui:
@@ -36,7 +34,6 @@ components:
               default: false
               description: |
                 Specify whether to enable public access. If enabled, the PostgreSQL service can be accessed from the public network.
-              nullable: true
               title: Publicly Accessible
               type: boolean
               x-walrus-ui:
@@ -61,7 +58,6 @@ components:
           enum:
           - standalone
           - replication
-          nullable: true
           x-walrus-ui:
             group: Basic
             order: 3
@@ -75,7 +71,6 @@ components:
           - 1
           - 3
           - 5
-          nullable: true
           x-walrus-ui:
             group: Basic
             order: 4
@@ -90,7 +85,6 @@ components:
           - "15.0"
           - "14.0"
           - "13.0"
-          nullable: true
           x-walrus-ui:
             group: Basic
             order: 5
@@ -118,7 +112,6 @@ components:
             type: object
             x-walrus-ui:
               colSpan: 12
-          nullable: true
           x-walrus-ui:
             colSpan: 12
             group: Basic
@@ -132,7 +125,6 @@ components:
             or symbols: - _. \nThe database name cannot be PostgreSQL forbidden keyword.\nSee
             https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdatabase.\n"
           default: mydb
-          nullable: true
           minLength: 2
           maxLength: 64
           x-walrus-ui:
@@ -146,7 +138,6 @@ components:
             The username cannot be PostgreSQL forbidden keyword and postgres.
             See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
           default: rdsuser
-          nullable: true
           minLength: 2
           maxLength: 16
           x-walrus-ui:
@@ -160,7 +151,6 @@ components:
             If not specified, it will generate a random password.
             See https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createaccount.
           format: password
-          nullable: true
           writeOnly: true
           minLength: 8
           maxLength: 32
@@ -175,13 +165,11 @@ components:
             The computing resource design of Alibaba Cloud is very complex, it also needs to consider on the storage resource, please view the specification document for more information.
           default:
             class: rds.pg.s2.large
-          nullable: true
           properties:
             class:
               default: rds.pg.s2.large
               description: "Specify the computing resources for primay instance. \nSee
                 https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types.\n"
-              nullable: true
               title: Class
               type: string
               x-walrus-ui:
@@ -191,7 +179,6 @@ components:
                 Specify the computing resources for readonly instance.
                 Configure this field when `architecture` is `replication`, if not specified, it will use the same value as `class`.
                 See https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/read-only-apsaradb-rds-for-postgresql-instance-types.
-              nullable: true
               title: Readonly Class
               type: string
               x-walrus-ui:
@@ -209,13 +196,11 @@ components:
           default:
             class: local_ssd
             size: 20480
-          nullable: true
           properties:
             class:
               default: local_ssd
               description: |
                 Specify the storage class. See https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_instance#db_instance_storage_type.
-              nullable: true
               title: Class
               type: string
               x-walrus-ui:
@@ -225,7 +210,6 @@ components:
               description: |
                 Specify the storage size. Unit is megabyte.
               minimum: 20480
-              nullable: true
               title: Size(MiB)
               type: number
               x-walrus-ui:
