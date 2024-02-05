@@ -165,10 +165,10 @@ components:
             Specify the computing resources.
             The computing resource design of Alibaba Cloud is very complex, it also needs to consider on the storage resource, please view the specification document for more information.
           default:
-            class: rds.pg.s2.large
+            class: pg.n2.2c.1m
           properties:
             class:
-              default: rds.pg.s2.large
+              default: pg.n2.2c.1m
               description: "Specify the computing resources for primay instance. \nSee
                 https://www.alibabacloud.com/help/en/rds/apsaradb-rds-for-postgresql/primary-apsaradb-rds-for-postgresql-instance-types.\n"
               title: Class
@@ -195,11 +195,11 @@ components:
             Specify the storage resources, select from local_ssd, cloud_ssd, cloud_essd, cloud_essd2 or cloud_essd3.
             Choosing the storage resource is also related to the computing resource, please view the specification document for more information.
           default:
-            class: local_ssd
+            class: cloud_essd
             size: 20480
           properties:
             class:
-              default: local_ssd
+              default: cloud_essd
               description: |
                 Specify the storage class. See https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/db_instance#db_instance_storage_type.
               title: Class
