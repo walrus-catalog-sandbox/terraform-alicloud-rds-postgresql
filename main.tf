@@ -112,7 +112,7 @@ locals {
 #
 
 locals {
-  version = coalesce(var.engine_version, "15.0")
+  version = coalesce(var.engine_version, "16.0")
   parameters = merge(
     {
       synchronous_commit = "off"
@@ -129,8 +129,8 @@ data "alicloud_db_zones" "selected" {
   category                 = "HighAvailability"
   engine                   = "PostgreSQL"
   engine_version           = local.version
-  db_instance_class        = try(var.resources.class, "rds.pg.s2.large")
-  db_instance_storage_type = try(var.storage.class, "local_ssd")
+  db_instance_class        = try(var.resources.class, "pg.n2.2c.1m")
+  db_instance_storage_type = try(var.storage.class, "cloud_essd")
 
   lifecycle {
     postcondition {

@@ -82,9 +82,9 @@ variable "engine_version" {
 Specify the deployment engine version, select from https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdbinstance.
 EOF
   type        = string
-  default     = "15.0"
+  default     = "16.0"
   validation {
-    condition     = var.engine_version == "" || contains(["15.0", "14.0", "13.0"], var.engine_version)
+    condition     = var.engine_version == "" || contains(["16.0", "15.0", "14.0", "13.0"], var.engine_version)
     error_message = "Invalid version"
   }
 }
@@ -156,11 +156,11 @@ resources:
 ```
 EOF
   type = object({
-    class          = optional(string, "rds.pg.s2.large")
+    class          = optional(string, "pg.n2.2c.1m")
     readonly_class = optional(string)
   })
   default = {
-    class = "rds.pg.s2.large"
+    class = "pg.n2.2c.1m"
   }
 }
 
@@ -177,11 +177,11 @@ storage:
 ```
 EOF
   type = object({
-    class = optional(string, "local_ssd")
+    class = optional(string, "cloud_essd")
     size  = optional(number, 20 * 1024)
   })
   default = {
-    class = "local_ssd"
+    class = "cloud_essd"
     size  = 20 * 1024
   }
   validation {
