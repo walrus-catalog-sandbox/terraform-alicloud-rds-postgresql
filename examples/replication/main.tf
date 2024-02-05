@@ -18,7 +18,7 @@ provider "alicloud" {}
 locals {
   category       = "HighAvailability"
   engine         = "PostgreSQL"
-  engine_version = "15.0"
+  engine_version = "16.0"
   resources = {
     class          = "pg.x2.medium.2c"
     readonly_class = "pgro.x2.medium.1c"
