@@ -80,8 +80,9 @@ components:
           type: string
           description: |
             Specify the deployment engine version, select from https://www.alibabacloud.com/help/en/rds/developer-reference/api-rds-2014-08-15-createdbinstance.
-          default: "15.0"
+          default: "16.0"
           enum:
+          - "16.0"
           - "15.0"
           - "14.0"
           - "13.0"
