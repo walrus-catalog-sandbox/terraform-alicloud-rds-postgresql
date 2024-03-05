@@ -23,12 +23,35 @@ locals {
   architecture = coalesce(var.architecture, "standalone")
 }
 
+# create vpc.
+
+resource "alicloud_vpc" "default" {
+  count = var.infrastructure.vpc_id == null ? 1 : 0
+
+  vpc_name    = "default"
+  cidr_block  = "10.0.0.0/16"
+  description = "default"
+}
+
+resource "alicloud_vswitch" "default" {
+  for_each = var.infrastructure.vpc_id == null ? {
+    for i, c in data.alicloud_db_zones.selected.ids : c => cidrsubnet(alicloud_vpc.default[0].cidr_block, 8, i)
+  } : {}
+
+  vpc_id      = alicloud_vpc.default[0].id
+  zone_id     = each.key
+  cidr_block  = each.value
+  description = "default"
+
+  depends_on = [data.alicloud_db_zones.selected]
+}
+
 #
 # Ensure
 #
 
 data "alicloud_vpcs" "selected" {
-  ids = [var.infrastructure.vpc_id]
+  ids = [var.infrastructure.vpc_id != null ? var.infrastructure.vpc_id : alicloud_vpc.default[0].id]
 
   status = "Available"
 
@@ -38,6 +61,8 @@ data "alicloud_vpcs" "selected" {
       error_message = "VPC is not avaiable"
     }
   }
+
+  depends_on = [alicloud_vpc.default]
 }
 
 data "alicloud_vswitches" "selected" {
@@ -49,6 +74,8 @@ data "alicloud_vswitches" "selected" {
       error_message = "Replication mode needs multiple vswitches"
     }
   }
+
+  depends_on = [alicloud_vswitch.default]
 }
 
 data "alicloud_kms_keys" "selected" {
@@ -136,10 +163,6 @@ data "alicloud_db_zones" "selected" {
     postcondition {
       condition     = length(self.ids) > 1
       error_message = "VPC needs multiple zones distributed in different vswitches"
-    }
-    postcondition {
-      condition     = length(setintersection(self.ids, data.alicloud_vswitches.selected.vswitches[*].zone_id)) > 1
-      error_message = format("Selected resource class %s and storage class %s are not available in VPC", self.db_instance_class, self.db_instance_storage_type)
     }
   }
 }
