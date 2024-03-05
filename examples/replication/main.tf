@@ -16,9 +16,6 @@ terraform {
 provider "alicloud" {}
 
 locals {
-  category       = "HighAvailability"
-  engine         = "PostgreSQL"
-  engine_version = "16.0"
   resources = {
     class          = "pg.x2.medium.2c"
     readonly_class = "pgro.x2.medium.1c"
@@ -28,48 +25,10 @@ locals {
   }
 }
 
-data "alicloud_db_zones" "selected" {
-  category                 = local.category
-  engine                   = local.engine
-  engine_version           = local.engine_version
-  db_instance_class        = local.resources.class
-  db_instance_storage_type = local.storage.class
-
-  lifecycle {
-    postcondition {
-      condition     = length(toset(flatten([self.ids]))) > 1
-      error_message = "Failed to get Avaialbe Zones"
-    }
-  }
-}
-
-# create vpc.
-
-resource "alicloud_vpc" "example" {
-  vpc_name    = "example"
-  cidr_block  = "10.0.0.0/16"
-  description = "example"
-}
-
-resource "alicloud_vswitch" "example" {
-  for_each = {
-    for i, c in data.alicloud_db_zones.selected.ids : c => cidrsubnet(alicloud_vpc.example.cidr_block, 8, i)
-  }
-
-  vpc_id      = alicloud_vpc.example.id
-  zone_id     = each.key
-  cidr_block  = each.value
-  description = "example"
-}
-
 # create postgresql service.
 
 module "this" {
   source = "../.."
-
-  infrastructure = {
-    vpc_id = alicloud_vpc.example.id
-  }
 
   architecture                  = "replication"
   replication_readonly_replicas = 3
