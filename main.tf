@@ -207,6 +207,8 @@ resource "alicloud_db_instance" "primary" {
 
   force_restart       = true
   deletion_protection = false
+
+  depends_on = [alicloud_vswitch.default]
 }
 
 # create database.
